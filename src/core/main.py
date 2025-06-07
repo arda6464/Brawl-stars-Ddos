@@ -1,14 +1,17 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 import socket
 import threading
 import random
-from login import login
+from src.auth.login import login
+
+
 import time
-import os
-import sys
 from datetime import datetime
 from queue import Queue
 
-# Renkli çıktı için ANSI renk kodları
+# renk kodları
 class Colors:
     HEADER = '\033[95m'
     BLUE = '\033[94m'
@@ -20,11 +23,11 @@ class Colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-# Ekranı temizle
+# ekran temizle
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-# Banner göster
+# banner
 def show_banner():
     banner = f"""
     {Colors.CYAN}{Colors.BOLD}
@@ -50,11 +53,11 @@ def show_banner():
     """
     print(banner)
 
-# İstatistik sayaçları
+# istatislik
 successful_accounts = 0
 failed_accounts = 0
 retried_proxies = 0
-found_clubs = []  # Bulunan kulüp ID'lerini saklamak için
+found_clubs = []  # 
 start_time = None
 
 # Proxy yöneticisi sınıfı
@@ -64,10 +67,9 @@ class ProxyManager:
         self.working_proxies = proxy_list.copy()
         self.failed_proxies = []
         self.proxy_queue = Queue()
-        self.proxy_stats = {}  # Proxy başarı oranı istatistikleri
+        self.proxy_stats = {} 
         self.lock = threading.Lock()
         
-        # Proxy'leri kuyruğa ekle
         for proxy in self.working_proxies:
             self.proxy_queue.put(proxy)
             self.proxy_stats[proxy] = {"success": 0, "fail": 0}
@@ -76,11 +78,10 @@ class ProxyManager:
         """Sıradaki proxy'yi döndürür, yoksa rastgele bir proxy seçer"""
         with self.lock:
             if self.proxy_queue.empty():
-                # Başarısız proxyleri tekrar deneme (bazıları geçici olarak düşmüş olabilir)
                 retry_candidates = [p for p in self.failed_proxies 
-                                   if self.proxy_stats[p]["fail"] < 3]  # 3'ten az başarısız olan
+                                   if self.proxy_stats[p]["fail"] < 3] 
                 
-                if retry_candidates and random.random() < 0.3:  # %30 olasılıkla başarısız proxy'yi tekrar dene
+                if retry_candidates and random.random() < 0.3: 
                     proxy = random.choice(retry_candidates)
                     self.failed_proxies.remove(proxy)
                     print(f"{Colors.YELLOW}[↺] Başarısız proxy tekrar deneniyor: {proxy}{Colors.ENDC}")
@@ -89,10 +90,9 @@ class ProxyManager:
                     return proxy
                 
                 if not self.working_proxies:
-                    # Tüm proxy'ler bitti, listeyi yeniden yükle
                     self.reload_proxies()
                     if not self.working_proxies:
-                        return None  # Yeniden yükleme başarısız oldu
+                        return None  
                     
                 return random.choice(self.working_proxies)
             
@@ -102,20 +102,17 @@ class ProxyManager:
         """Proxy listesini yeniden yükler"""
         print(f"{Colors.YELLOW}[⟳] Proxy listesi yeniden yükleniyor...{Colors.ENDC}")
         try:
-            with open("working_proxies.txt", "r") as f:
+            with open("../../data/proxies/working_proxies.txt", "r") as f:
                 new_proxies = [line.strip() for line in f if line.strip()]
             
-            # Yeni proxy'lerin hepsini ekle
             for proxy in new_proxies:
                 if proxy not in self.proxy_stats:
                     self.proxy_stats[proxy] = {"success": 0, "fail": 0}
             
-            # Çalışan proxy'leri güncelle
             self.all_proxies = new_proxies.copy()
             self.working_proxies = new_proxies.copy()
             self.failed_proxies = []
             
-            # Proxy'leri kuyruğa ekle
             for proxy in self.working_proxies:
                 self.proxy_queue.put(proxy)
             
@@ -131,14 +128,11 @@ class ProxyManager:
             if proxy in self.proxy_stats:
                 self.proxy_stats[proxy]["success"] += 1
             
-            # Başarılı proxy'yi tekrar kuyruğa ekle
             self.proxy_queue.put(proxy)
             
-            # Başarısız listesindeyse çıkar
             if proxy in self.failed_proxies:
                 self.failed_proxies.remove(proxy)
                 
-            # Çalışan listesine ekle
             if proxy not in self.working_proxies:
                 self.working_proxies.append(proxy)
     
@@ -148,11 +142,9 @@ class ProxyManager:
             if proxy in self.proxy_stats:
                 self.proxy_stats[proxy]["fail"] += 1
             
-            # Çalışan listesinden çıkar
             if proxy in self.working_proxies:
                 self.working_proxies.remove(proxy)
                 
-            # Başarısız listesine ekle
             if proxy not in self.failed_proxies:
                 self.failed_proxies.append(proxy)
     
@@ -166,11 +158,11 @@ class ProxyManager:
                 "detailed": self.proxy_stats
             }
 
-# İstatistikleri göster
+
 def show_stats():
     if start_time:
         elapsed = datetime.now() - start_time
-        elapsed_str = str(elapsed).split('.')[0]  # Microseconds kısmını kaldır
+        elapsed_str = str(elapsed).split('.')[0]  
         zaman = datetime.now() 
         
         print(f"\n{Colors.BOLD}━━━━━━━━━━━━━ İSTATİSTİKLER ━━━━━━━━━━━━━{Colors.ENDC}")
@@ -188,10 +180,8 @@ def show_stats():
             print(f"{Colors.CYAN}⚡ Hız: {rate:.2f} hesap/dakika{Colors.ENDC}")
             print(f" tarih: {zaman.hour}:{zaman.minute}:{zaman.second}")
             
-        # Bulunan kulüp ID'lerini göster
         if found_clubs:
             print(f"{Colors.GREEN}🏆 Bulunan Kulüpler: {len(found_clubs)}{Colors.ENDC}")
-            # Son 5 kulübü göster
             for club_id in found_clubs[-5:]:
                 print(f"{Colors.CYAN}   ▶ Kulüp ID: {club_id}{Colors.ENDC}")
             
@@ -207,7 +197,7 @@ ddos_port = int(input(f"{Colors.CYAN}➤ Hedef Port: {Colors.ENDC}"))
 version = int(input(f"{Colors.CYAN}➤ Sunucu Versiyonu: {Colors.ENDC}"))
 num_threads = int(input(f"{Colors.CYAN}➤ Thread Sayısı: {Colors.ENDC}"))
 
-# İnsan davranışı simülasyon seçenekleri
+
 print(f"\n{Colors.YELLOW}Anti-Detection Ayarları:{Colors.ENDC}")
 enable_random_delays = input(f"{Colors.CYAN}➤ İnsan davranışı simülasyonu aktif olsun mu? (E/H): {Colors.ENDC}").upper() in ["E", "EVET", "Y", "YES"]
 
@@ -220,7 +210,6 @@ else:
     max_delay = 1.0
     print(f"{Colors.YELLOW}⚠ İnsan davranışı simülasyonu devre dışı. Tespit riski yüksek!{Colors.ENDC}")
 
-# İşlem seçenekleri
 print(f"\n{Colors.YELLOW}Yapılacak İşlemleri Seçin:{Colors.ENDC}")
 
 print(f"{Colors.CYAN}[1] {Colors.ENDC}Hesap Oluştur")
@@ -234,7 +223,7 @@ create_accounts = 1 in selected_operations
 create_clubs = 2 in selected_operations
 join_clubs = 3 in selected_operations
 
-# Kulüp işlemleri için gerekli bilgileri iste
+
 if create_clubs:
     print(f"\n{Colors.YELLOW}Kulüp Bilgileri Girin:{Colors.ENDC}")
     club_name = input(f"{Colors.CYAN}➤ Kulüp Adı: {Colors.ENDC}")
@@ -267,7 +256,6 @@ if join_clubs:
         use_club_tag = False
         found_clubs_file = "found_clubs.txt"
         
-        # Önceden bulunan kulüpleri yükle
         try:
             with open(found_clubs_file, "r") as f:
                 found_clubs = [int(line.strip()) for line in f.readlines() if line.strip().isdigit()]
@@ -279,7 +267,7 @@ def load_proxies():
     proxies = []
     print(f"\n{Colors.YELLOW}Proxy Listesi Yükleniyor...{Colors.ENDC}")
     try:
-        with open("working_proxies.txt", "r") as f:
+        with open("../../data/proxies/working_proxies.txt", "r") as f:
             proxies = [line.strip() for line in f.readlines() if line.strip()]
         print(f"{Colors.GREEN}✓ {len(proxies)} proxy yüklendi.{Colors.ENDC}")
     except FileNotFoundError:
@@ -291,7 +279,6 @@ if not proxy_list:
     print(f"{Colors.RED}✗ Proxy listesi boş! İşlem durduruluyor.{Colors.ENDC}")
     sys.exit(1)
 
-# Proxy yöneticisini başlat
 proxy_manager = ProxyManager(proxy_list)
 
 def send_register_packet():
@@ -302,7 +289,7 @@ def send_register_packet():
             
             if not proxy:
                 print(f"{Colors.RED}✗ Tüm proxy'ler denendi ve başarısız oldu. Tekrar deneniyor...{Colors.ENDC}")
-                time.sleep(5)  # 5 saniye bekle ve yeniden dene
+                time.sleep(5)  
                 continue
                 
             proxy_ip, proxy_port = proxy.split(":")
@@ -323,7 +310,6 @@ def send_register_packet():
                 s.close()
                 continue
 
-            # İnsan davranışını simüle et - ilk bağlantı sonrası bekleme
             if enable_random_delays:
                 human_delay = random.uniform(min_delay, max_delay)
                 time.sleep(human_delay)
@@ -331,12 +317,10 @@ def send_register_packet():
             l = login()
             success_message = ""
             
-            # Seçilen işlemleri sırayla yap
             if create_accounts:
                 s.send(l.create_account(version))
                 success_message += "Hesap oluşturuldu "
                 
-                # İnsan davranışını simüle et - hesap oluşturma sonrası bekleme
                 if enable_random_delays:
                     human_delay = random.uniform(min_delay, max_delay)
                     time.sleep(human_delay)
@@ -347,7 +331,6 @@ def send_register_packet():
                     success_message += "& "
                 success_message += "Kulüp oluşturuldu "
                 
-                # İnsan davranışını simüle et - kulüp oluşturma sonrası bekleme
                 if enable_random_delays:
                     human_delay = random.uniform(min_delay, max_delay)
                     time.sleep(human_delay)
@@ -356,14 +339,12 @@ def send_register_packet():
                 current_club_id = None
                 
                 if use_club_tag:
-                    # Etiket ile kulübe katıl
                     s.send(l.join_club_by_tag(club_tag))
                     if success_message:
                         success_message += "& "
                     success_message += f"Kulübe etiket ile katıldı ({club_tag}) "
                 elif use_random_club_ids:
-                    # Hali hazırda bulunan kulüpleri dene ya da yeni bir ID dene
-                    if found_clubs and random.random() < 0.7:  # %70 ihtimalle bulunan kulüplere katıl
+                    if found_clubs and random.random() < 0.7: 
                         current_club_id = random.choice(found_clubs)
                     else:
                         current_club_id = random.randint(min_club_id, max_club_id)

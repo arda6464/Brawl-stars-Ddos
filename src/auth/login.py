@@ -1,8 +1,11 @@
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 import struct
 import random
 import string
 import uuid
-from utils import Writer
+from ..utils.utils import Writer
 
 class login:
     # Cihaz modelleri, Android ve iOS cihazlar
