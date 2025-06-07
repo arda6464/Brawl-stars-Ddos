@@ -24,11 +24,9 @@ def test_club_manager():
         club = ClubManager()
         print("✓ ClubManager başarıyla oluşturuldu")
         
-        # Kulüp oluşturma paketi testi
         create_packet = club.create_club_packet("Test Club", "Test Description")
         print(f"✓ Kulüp oluşturma paketi oluşturuldu (boyut: {len(create_packet)} bytes)")
         
-        # Kulübe katılma paketi testi
         join_packet = club.join_club_by_tag_packet("#TEST123")
         print(f"✓ Kulübe katılma paketi oluşturuldu (boyut: {len(join_packet)} bytes)")
         return True
@@ -39,7 +37,6 @@ def test_club_manager():
 def test_proxy_manager():
     print("\n=== Proxy Manager Test ===")
     try:
-        # Test proxy listesi
         test_proxies = [
             "192.168.1.1:8080",
             "10.0.0.1:3128",
@@ -49,18 +46,15 @@ def test_proxy_manager():
         proxy_mgr = ProxyManager(test_proxies)
         print("✓ ProxyManager başarıyla oluşturuldu")
         
-        # Proxy alma testi
         proxy = proxy_mgr.get_proxy()
         print(f"✓ Proxy alındı: {proxy}")
         
-        # Proxy başarı/başarısızlık testi
         proxy_mgr.report_success(proxy)
         print("✓ Proxy başarı raporu gönderildi")
         
         proxy_mgr.report_failure(proxy)
         print("✓ Proxy başarısızlık raporu gönderildi")
         
-        # İstatistik testi
         stats = proxy_mgr.get_stats()
         print(f"✓ İstatistikler alındı: {stats}")
         return True
@@ -74,17 +68,14 @@ def test_network_manager():
         network = NetworkManager()
         print("✓ NetworkManager başarıyla oluşturuldu")
         
-        # Bağlantı testi (timeout ile)
         print("Bağlantı testi yapılıyor (5 saniye timeout)...")
         connected = network.connect()
         if connected:
             print("✓ Sunucuya bağlantı başarılı")
             
-            # Hello paketi testi
             if network.send_hello_packet(version=1):
                 print("✓ Hello paketi gönderildi")
                 
-                # Paket alma testi
                 response = network.receive_packet(timeout=2)
                 if response:
                     print(f"✓ Yanıt alındı (boyut: {len(response)} bytes)")
@@ -121,7 +112,7 @@ def main():
             print(f"✓ {name} testi başarılı")
         else:
             print(f"✗ {name} testi başarısız")
-        time.sleep(1)  # Testler arası kısa bekleme
+        time.sleep(1)
     
     print("\n=== Test Sonuçları ===")
     print(f"Toplam Test: {total_tests}")

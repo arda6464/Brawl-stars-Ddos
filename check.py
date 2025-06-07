@@ -11,12 +11,8 @@ class Colors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
 
-
-
 def test_proxy(proxy):
-    
     try:
-        
         proxies = {
             "http": f"http://{proxy}",
             "https": f"http://{proxy}",
@@ -24,7 +20,6 @@ def test_proxy(proxy):
         r = requests.get("http://httpbin.org/ip", proxies=proxies, timeout=8)
         if r.status_code == 200:
             print(f"{Colors.GREEN}[+] Proxy {proxy} çalışıyor.{Colors.ENDC} ")
-
             return True
     except requests.exceptions.ConnectTimeout:
         print(f"{Colors.RED}[-] Proxy {proxy} zaman aşımına uğradı.{Colors.ENDC}")
@@ -35,13 +30,11 @@ def test_proxy(proxy):
     return False
 
 def main():
-    # Başlık
     print(f"\n{Colors.BOLD}{Colors.CYAN}TIME TEAM PROXY CHECKER{Colors.ENDC}")
     print(f"{Colors.YELLOW}Powered by arda64{Colors.ENDC}")
     print(f"{Colors.BOLD}{'='*40}{Colors.ENDC}\n")
 
     try:
-        
         input_file = "proxies.txt"
         output_file = "working_proxies.txt" 
         
@@ -57,17 +50,13 @@ def main():
         
         start_time = time.time()
         
-        # Thread havuzu ile paralel test
         with ThreadPoolExecutor(max_workers=10) as executor:
             results = list(executor.map(test_proxy, proxy_list))
         
-        
         working_proxies = [proxy for proxy, result in zip(proxy_list, results) if result]
         
-        # süre
         elapsed = time.time() - start_time
         
-        # yaz
         if working_proxies:
             with open(output_file, "w") as f:
                 for p in working_proxies:

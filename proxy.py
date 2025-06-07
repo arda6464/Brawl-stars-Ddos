@@ -14,7 +14,6 @@ def test_proxy(proxy):
             "http": f"http://{proxy}",
             "https": f"http://{proxy}",
         }
-        # https yerine http kullanıyoruz
         r = requests.get("http://example.com", proxies=proxies, timeout=5)
         if r.status_code == 200:
             print(f"[✓] ÇALIŞIYOR: {proxy}")
