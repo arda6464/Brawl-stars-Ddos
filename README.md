@@ -1,6 +1,6 @@
 # Brawl Stars DDoS Aracı
 
-Brawl Stars sunucu dayanıklılığını ve ağ performansını test etmek için Python tabanlı bir araç.
+Brawl Stars için çoklu hesap yönetimi, kulüp oluşturma ve sunucu test aracı.
 
 ## ⚠️ Uyarı
 
@@ -44,35 +44,23 @@ pip install -r requirements.txt
 
 ## 💻 Kullanım
 
-1. Tüm sunucuları test et:
-```bash
-python test_all.py
-```
-
-2. Belirli bir sunucuyu test et:
-```bash
-python server.py
-```
-
-3. Proxy'leri doğrula:
+1. Proxy'leri doğrula:
 ```bash
 python proxy.py
 ```
 
-4. Ana test aracı:
+2. Ana programı çalıştır:
 ```bash
 python main.py
 ```
 
 ## 📁 Proje Yapısı
 
-- `main.py` - Ana test betiği
+- `main.py` - Ana program
 - `server.py` - Sunucu test modülü
 - `proxy.py` - Proxy yönetimi ve doğrulama
 - `utils.py` - Yardımcı fonksiyonlar
-- `test_all.py` - Kapsamlı test betiği
-- `login.py` - Hesap oluşturma 
-- `check.py` - Bağlantı kontrol yardımcıları
+- `login.py` - Hesap oluşturma
 
 ## 📝 Dosya Açıklamaları
 
